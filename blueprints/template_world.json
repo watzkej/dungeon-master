@@ -1,0 +1,35 @@
+{
+  "chronology": {
+    "day": "<INTEGER: Incremental campaign calendar day count>",
+    "time": "<STRING: 24-hour current game clock time formatted as 'HH:MM'>",
+    "watch": "<STRING: Current tracking period, e.g., 'morning', 'afternoon', 'evening', 'night_1', 'night_2'>",
+    "environment": "<STRING: Current micro-setting or dungeon tier name, lowercase with underscores>",
+    "light": "<STRING: Ambient lighting conditions, e.g., 'bright_light' | 'dim_light' | 'darkness'>",
+    "weather": "<STRING: Atmospheric conditions if applicable, e.g., 'heavy_rain', 'clear', 'arid_heat'>"
+  },
+  "campaign_config": {
+    "rolling_mode": "<STRING: 'digital_internal' | 'digital_tools' | 'manual_physical'>"
+  },
+  "active_effects": [
+    {
+      "source": "<STRING: Character, NPC, or trap name originating the effect>",
+      "effect": "<STRING: Spell, item, or environmental condition name, e.g., 'Torch', 'Bless', 'Web'>",
+      "rem_duration": "<STRING: Time left before expiry, e.g., '50m' for fifty minutes, '8r' for eight rounds>",
+      "target": "<STRING: Area or entity affected, e.g., 'party_radius_30ft', 'Valen', 'entire_room'>"
+    }
+  ],
+  "local_factions": {
+    "<STRING: faction_or_guild_identifier>": "<INTEGER: Numerical affinity ranking restricted from -5 (mortal enemy) to +5 (revered ally)>"
+  },
+  "npc_dispositions": {
+    "<STRING: npc_name_identifier>": "<STRING: Immediate stance toward the party, e.g., 'hostile' | 'wary' | 'neutral' | 'friendly' | 'loyal'>"
+  },
+  "quest_flags": {
+    "<STRING: short_quest_id>": "<STRING: Current tracking phase, strictly restricted to 'inactive' | 'active' | 'completed' | 'failed'>"
+  },
+  "active_map": {
+    "current_zone": "<STRING: Current Zone Name>",
+    "matrix_layout": []
+  },
+  "dm_notes": "<STRING: High-density narrative logic, immediate environment notes, hidden enemy traps, or behavioral conditions for current state processing. Keep brief.>"
+}

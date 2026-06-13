@@ -1,0 +1,43 @@
+{
+  "party_level": "<INTEGER: Combined average or uniform level of the adventuring group>",
+  "resting_state": "<STRING: 'none' | 'short_rest_active' | 'long_rest_active'>",
+  "characters": [
+    {
+      "name": "<STRING: Character's given name, used as primary key>",
+      "class": "<STRING: 'Class Name' space 'Level', e.g., 'Fighter 4' or 'Bard 3 / Rogue 1'>",
+      "race": "<STRING: Character race or lineage>",
+      "hp": [
+        "<INTEGER: Current Hit Points>",
+        "<INTEGER: Maximum Hit Points>"
+      ],
+      "ac": "<INTEGER: Total static Armor Class including armor, shields, and passive modifiers>",
+      "init": "<INTEGER: Total Initiative modifier (Dexterity modifier + any feature bonuses)>",
+      "dc_pass": "<INTEGER: Passive Perception score (10 + Perception skill modifier)>",
+      "dc_ins": "<INTEGER: Passive Insight score (10 + Insight skill modifier)>",
+      "saves": {
+        "str": "<INTEGER: Total Strength Saving Throw modifier>",
+        "dex": "<INTEGER: Total Dexterity Saving Throw modifier>",
+        "con": "<INTEGER: Total Constitution Saving Throw modifier>",
+        "int": "<INTEGER: Total Intelligence Saving Throw modifier>",
+        "wis": "<INTEGER: Total Wisdom Saving Throw modifier>",
+        "cha": "<INTEGER: Total Charisma Saving Throw modifier>"
+      },
+      "skills": {
+        "<STRING: skill_name_lowercase_abbreviated>": "<INTEGER: Total modifier for proficient/expert skills only. Omit non-proficient skills.>"
+      },
+      "slots": {
+        "l1": ["<INTEGER: Current Available Level 1 Slots>", "<INTEGER: Max Level 1 Slots>"],
+        "l2": ["<INTEGER: Current Available Level 2 Slots>", "<INTEGER: Max Level 2 Slots>"]
+      },
+      "features": {
+        "<STRING: resource_name>": ["<INTEGER: Current charges remaining>", "<INTEGER: Max charges pool>"]
+      },
+      "cond": [
+        "<STRING: Active status conditions or tracking arrays, e.g., 'poisoned', 'blinded', 'exhaustion_2'. Empty if healthy.>"
+      ],
+      "inv": [
+        "<STRING: Item Name with optional count in parentheses, e.g., 'Rations (5)', 'Potion of Healing'>"
+      ]
+    }
+  ]
+}

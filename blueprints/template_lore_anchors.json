@@ -1,0 +1,8 @@
+{
+  "anchor_protocol": "CRITICAL: Do not read, inject, or process anchor data values unless the exact Key string matches a verbatim noun mentioned in the current player prompt, immediate location state, or active quest tracking.",
+  "anchors": {
+    "<STRING: EXACT_PROPER_NOUN_NPC_NAME>": "NPC. <RACE> <CLASS/ROLE>. Disposition: <DISPOSITION>. Secret motive: <HIDDEN_GOAL>. Key relationship: <FACTION/NPC>. Immediate physical tell or defining equipment piece.",
+    "<STRING: EXACT_PROPER_NOUN_LOCATION_NAME>": "LOCATION. <REGION/ZONE>. Origin/Age: <HISTORICAL_ERA>. Current occupying force: <FACTION/MONSTERS>. Hidden spatial attribute: <SECRET_DOOR_TRAP_OR_RESOURCE>.",
+    "<STRING: EXACT_PROPER_NOUN_ITEM_OR_ARTIFACT>": "ITEM. <TYPE/RARITY>. Mechanical curse or attunement perk: <STATS>. Hidden lore: <HISTORICAL_OR_FACTION_VALUE>. Current location or missing component clue."
+  }
+}
