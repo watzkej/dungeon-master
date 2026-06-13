@@ -1,0 +1,253 @@
+# dungeon-master
+
+An AI-powered Dungeon Master engine for running tabletop RPG campaigns. This
+repository provides a structured framework that transforms a large language
+model into a rules-accurate, stateful DM — tracking character sheets, world
+state, spatial positioning, lore anchors, and mechanical resolution across an
+entire campaign.
+
+---
+
+## What It Does
+
+`dungeon-master` is not a game. It's an **agent architecture** — a system of
+blueprints, rules, and execution protocols that constrains an LLM to behave
+like a disciplined Dungeon Master. When loaded by a compatible agent host
+(such as Hermes Agent), the engine:
+
+- **Enforces 5e-compatible mechanics** — initiative, attack rolls, saving throws,
+  spell slots, concentration, cover, death saves, and resting are all resolved
+  transparently with explicit DCs and dice math.
+- **Maintains persistent campaign state** — party sheets, world chronology,
+  faction reputations, NPC dispositions, active quests, and spatial map
+  matrices live in JSON files that update after every turn.
+- **Protects spatial continuity** — a room matrix locks cardinal directions to
+  real exits. You can't walk through a solid stone wall just because the
+  narrative forgot about it.
+- **Activates lore on demand** — NPC secrets, hidden traps, and faction motives
+  are stored in a passive anchor index. They only surface when the player
+  actually encounters them, keeping context efficient and surprises genuine.
+- **Clocks tension** — a ticking Tension Clock triggers environmental
+  complications and wandering monsters if the party lingers too long.
+- **Plays monsters intelligently** — creature behavior scales with intellect,
+  from mindless zombies that attack the nearest target to masterminds that
+  coordinate ambushes and target spellcasters.
+- **Manages multiple campaigns via git** — each campaign lives on its own
+  git branch (`campaign/{name}`). State changes auto-commit with turn-numbered
+  messages. List, switch, or start new campaigns without losing progress.
+
+---
+
+## Project Structure
+
+```
+dungeon-master/
+├── AGENTS.md                          # Agent architecture & execution pipeline
+├── README.md                          # This file
+├── SOUL.md                            # (create this) DM persona & prose voice
+├── blueprints/
+│   ├── template_party.json            # Character sheet template
+│   ├── template_world.json            # World state template
+│   └── template_lore_anchors.json     # Lore anchor template (NPCs, items, locations)
+├── campaign/
+│   ├── party.json                     # Active party state (HP, slots, inventory, conditions)
+│   ├── world_state.json               # Active world state (calendar, map, quests, factions)
+│   └── lore_anchors.json              # Active lore database (secrets, motives, traps)
+├── rules/
+│   ├── combat.md                      # Initiative, attacks, spells, cover, death saves, resting
+│   ├── exploration.md                 # Zone movement, stealth, darkvision
+│   └── pacing.md                      # Tension clock, wandering monsters, monster AI
+└── tools/
+    └── dice_roller.js                 # (create this) Digital dice rolling for mechanical resolution
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- A compatible agent host (designed for [Hermes Agent](https://hermes-agent.nousresearch.com) but adaptable to any LLM runtime that supports tool calls and file I/O)
+- Node.js (optional — only if you enable the `tools/dice_roller.js` path for digital dice)
+
+### First-Time Setup
+
+1. **Clone the repository** and open it in your agent host.
+2. **Start a new session.** The engine detects that `campaign/` is empty and
+   enters Setup Mode automatically.
+3. **Name your campaign** — the agent asks for a short, URL-friendly name
+   (e.g., `lost-mines`, `curse-of-strahd`). It creates a git branch
+   `campaign/{name}` to isolate this campaign's state from others.
+4. **Create your character(s)** — the agent interviews you for name, class,
+   race, ability scores, AC, equipment, and skill proficiencies.
+5. **Choose your rolling mode:**
+   - `digital_internal` — the agent generates d20 rolls internally
+   - `digital_tools` — runs `tools/dice_roller.js` for verifiable randomness
+   - `manual_physical` — you roll real dice at your desk and report the results
+6. **Define your world** — the agent populates `world_state.json` with your
+   starting environment, factions, NPCs, and quest hooks.
+7. **Lore anchors** initialize as an empty `{}` block. The agent seeds them
+   organically as you explore.
+
+Once `campaign/party.json`, `campaign/world_state.json`, and
+`campaign/lore_anchors.json` are written with real values, Setup Mode ends and
+regular gameplay begins.
+
+### The Game Loop
+
+Every player turn runs through an 8-step execution pipeline:
+
+| Step | What Happens |
+|------|-------------|
+| 1. Player Input | You describe what your character does |
+| 2. State Check | Reads `party.json` for HP, conditions, resources, passive stats |
+| 3. Spatial Check | Verifies movement against the active room matrix in `world_state.json` |
+| 4. Lore Anchor Match | Scans your input for NPC/location/item names; injects any matching secret |
+| 5. Mechanic Correlation | Cross-references your action against `rules/` if ambiguity exists |
+| 6. Resolution | Rolls dice, calculates modifiers, determines success/failure |
+| 7. State Update | Writes back HP changes, resource consumption, map transformations; auto-commits `campaign/` with a turn-numbered message |
+| 8. Prose Generation | Renders the narrative outcome in the voice defined by `SOUL.md` |
+
+Every mechanical action includes a transparent **Mechanics Resolution** block
+showing the DC, raw roll, modifiers, and state changes before the narrative
+prose.
+
+---
+
+## Campaign Management
+
+Every campaign lives on its own git branch under `campaign/{name}`. This keeps
+state isolated and gives you a full version history of every session.
+
+### Starting a New Campaign
+
+Run Setup Mode (see First-Time Setup above). The agent prompts for a campaign
+name, then runs `git checkout -b campaign/{name}` before writing any state
+files. The initial campaign files are committed as
+`"Campaign initialized: {name}"`.
+
+### Auto-Commit
+
+After every turn that changes game state (HP, spell slots, inventory, map
+layout, quest flags, etc.), the agent runs:
+
+```bash
+git add campaign/ && git commit -m "Turn {N}: {short summary}"
+```
+
+Example commits:
+- `Turn 3: Valen looted sarcophagus, -1 torch`
+- `Turn 7: Combat concluded, goblin chief slain, Valen -8 HP`
+- `Turn 12: Party entered the Sunken Hall, torches lit`
+
+Conversational turns or failed checks with no resource cost do not produce
+a commit. This keeps your history clean and meaningful.
+
+### Listing Campaigns
+
+Ask the agent to "list campaigns" and it runs:
+
+```bash
+git branch --list 'campaign/*'
+```
+
+The active campaign is marked with a `*`.
+
+### Switching Campaigns
+
+Say "switch to {campaign-name}" and the agent:
+
+1. Commits any uncommitted state on the current campaign
+2. Checks out `campaign/{campaign-name}`
+3. Loads that campaign's party, world, and lore files
+4. Summarizes where you left off (who the party is, current location, HP/resources)
+
+If the branch doesn't exist, the agent lets you know and suggests starting a
+new campaign with that name.
+
+---
+
+## The Rules System
+
+Rules live in `rules/` as Markdown files. The agent treats these as **absolute
+law** — they override any baseline knowledge the LLM may have about D&D. This
+means you can customize, homebrew, or replace any rule without confusing the
+engine.
+
+### Combat (`rules/combat.md`)
+
+Full 5e-compatible combat engine covering:
+- Initiative and surprise rounds
+- Action / Bonus Action / Reaction economy
+- Attack rolls vs. AC with critical hit/miss rules
+- Spellcasting (concentration checks, bonus action spell law, cover modifiers)
+- Vision, light, advantage/disadvantage
+- Damage at 0 HP, death saving throws, and resting recovery
+
+### Exploration (`rules/exploration.md`)
+
+Theater-of-the-mind spatial tracking:
+- Zone-based movement (adjacent zones cost 15 ft, difficult terrain doubles it)
+- Engagement rules (melee vs. ranged within zones)
+- Stealth protocol with passive perception thresholds
+- Light dependency and darkvision penalties
+
+### Pacing (`rules/pacing.md`)
+
+- **Tension Clock** — every turn of investigation or debate ticks the clock;
+  at 4 ticks, roll for complications or wandering monsters
+- **Monster AI Profiles** — behavior scales across three intellect tiers:
+  feral (attack closest), tactical (focus fire, use cover, retreat),
+  mastermind (target casters, coordinate ambushes, exploit terrain)
+
+---
+
+## Customization
+
+### Creating a SOUL.md
+
+The agent references `SOUL.md` for its narrative voice. Create one to define
+how your DM speaks. Example:
+
+```markdown
+# DM Persona
+You are Kaelen, a weathered dwarven storyteller with a gravelly voice and a
+soft spot for underdogs. Your prose is sensory-rich — describe smells, sounds,
+and textures. You favor short, punchy sentences in combat and expansive,
+atmospheric descriptions during exploration. You never break character.
+```
+
+### Adding Rules
+
+Drop a new `.md` file into `rules/` (e.g., `rules/magic_items.md`,
+`rules/downtime.md`, `rules/ship_combat.md`). The agent will automatically
+correlate player actions against all rule files during Step 5 of the pipeline.
+
+### Extending Blueprints
+
+Modify the template JSON files in `blueprints/` to add custom fields (e.g.,
+sanity scores, honor points, vehicle stats). The agent uses these blueprints
+to validate party and world state during Setup Mode.
+
+---
+
+## Design Philosophy
+
+- **Mechanical integrity over narrative convenience.** The engine will never
+  fudge a roll or ignore a rule to make a better story. Emergent drama from
+  honest resolution is the goal.
+- **Stateless is faithless.** Every HP change, spell slot expenditure, and
+  door you unlock persists to disk. Close the session and come back next week
+  — the world is exactly as you left it.
+- **Secrets stay secret.** Lore anchors are indexed passively. The agent
+  cannot and will not dump the entire lore database into narration. You
+  discover secrets by encountering them, not by having the DM summarize them.
+- **The map is real.** Spatial constraints are enforced at the engine level.
+  You cannot walk through walls, and objects positioned at specific cardinal
+  directions stay there until something moves them.
+
+---
+
+## License
+
+MIT

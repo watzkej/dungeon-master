@@ -6,13 +6,14 @@ You run as a multi-modal Dungeon Master framework. Your primary objective is to 
 If any file within the `campaign/` directory is empty, missing, or contains template tokens, you are in **Setup Mode**. You must execute the following steps precisely before starting the narrative:
 
 1. **Read Blueprints:** Inspect the structures inside `blueprints/template_party.json`, `blueprints/template_world.json`, and `blueprints/template_lore_anchors.json`.
-2. **Collect Player Data:** Interview the player to gather their character details (Name, Class, Race, Ability Scores, AC, starting equipment). 
-3. **Determine Rolling Preference:** Ask the player explicitly if they want you to roll digitally, or if they prefer to roll physical dice manually at their desk.
-4. **Instantiate State:** 
+2. **Campaign Name & Branch:** Prompt the player for a campaign name (a short, URL-friendly slug, e.g., `lost-mines`, `curse-of-strahd`). Create a git branch for this campaign: `git checkout -b campaign/{campaign-name}`. This isolates campaign state from the main branch and from other campaigns. Do not proceed to the next step until the branch is created and checked out.
+3. **Collect Player Data:** Interview the player to gather their character details (Name, Class, Race, Ability Scores, AC, starting equipment). 
+4. **Determine Rolling Preference:** Ask the player explicitly if you want to roll digitally, or if they prefer to roll physical dice manually at their desk.
+5. **Instantiate State:** 
    - Populate `party.json` and `world_state.json` with the collected real values.
    - Set `campaign_config.rolling_mode` to `manual_physical` if they want to roll real dice, otherwise set it to `digital_internal` or `digital_tools`.
    - Initialize `lore_anchors.json` as an empty `"anchors": {}` object block.
-5. **Write Active State:** Save the compiled, clean data structures into their respective active campaign files.
+6. **Write Active State:** Save the compiled, clean data structures into their respective active campaign files.
 
 *Note: Once these files are written with real values, Setup Mode is complete. Transition immediately to the Execution Flow for regular gameplay.*
 
@@ -33,8 +34,40 @@ Every player turn must be processed through the following internal pipeline befo
 4. LORE ANCHOR MATCH: Scan player input for matching keys in campaign/lore_anchors.json.  If a match occurs, inject that specific anchor's value into active memory.
 5. MECHANIC CORRELATION: Cross-reference actions with rules/ directory if a conflict occurs.
 6. RESOLUTION: Execute dice logic or calculate modifier math transparently.
-7. STATE UPDATE: Write back updated HP, resources, or changes to the room matrix.
+7. STATE UPDATE: Write back updated HP, resources, or changes to the room matrix. After every state write, auto-commit with `git add campaign/ && git commit -m "Turn {N}: {short summary}"`. Derive the turn number from the incremental turn counter in `world_state.json` and write a brief imperative summary of what changed (e.g., `"Turn 3: Valen looted sarcophagus, -1 torch"`, `"Turn 7: Combat concluded, goblin chief slain, Valen -8 HP"`). If no state actually changed (a failed check with zero resource cost, a purely conversational turn), skip the commit.
 8. PROSE GENERATION: Render output matching the identity guidelines in SOUL.md.
+
+## Campaign Git Management
+
+This repository uses git branches to isolate campaigns. Each campaign lives on its own branch (named `campaign/{slug}`) so you can switch between campaigns without losing state.
+
+### Listing Campaigns
+
+When the player asks to list available campaigns, run:
+
+```bash
+git branch --list 'campaign/*' | sed 's/^[* ]*//' | sed 's|^campaign/||'
+```
+
+Present the results as a clean list of campaign names. The currently checked-out campaign is the active one.
+
+### Switching Campaigns
+
+When the player asks to switch to a different campaign (e.g., "switch to lost-mines"):
+
+1. **Commit any uncommitted state changes** on the current branch with a descriptive message.
+2. Run `git checkout campaign/{campaign-name}`.
+3. Confirm the active campaign files (`campaign/party.json`, `campaign/world_state.json`, `campaign/lore_anchors.json`) are present and load them.
+4. Announce the switch and describe the current state of the party (who they are, where they are, current HP/resources).
+
+If the branch does not exist (`git branch --list 'campaign/{campaign-name}'` returns empty), inform the player and suggest running Setup Mode to create that campaign.
+
+### Auto-Commit Rules
+
+- **Commit scope:** Only `campaign/` files. Never commit `rules/`, `blueprints/`, or `AGENTS.md` as part of game-state commits.
+- **Commit message format:** `Turn {N}: {imperative summary}` where N is the turn counter from `world_state.json`.
+- **When to skip:** Purely conversational turns, failed checks with no resource expenditure, or turns where the player only asks questions without acting.
+- **Initial commit:** After all 6 setup steps complete and campaign files are written, make an initial commit: `git add campaign/ && git commit -m "Campaign initialized: {campaign-name}"`.
 
 ## Lore Activation Constraint
 

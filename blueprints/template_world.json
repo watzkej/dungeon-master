@@ -1,5 +1,6 @@
 {
   "chronology": {
+    "turn": "<INTEGER: Incremental turn counter. Starts at 0 during setup, increments each time player takes a resolved action. Used for git commit messages and tension clock tracking.>",
     "day": "<INTEGER: Incremental campaign calendar day count>",
     "time": "<STRING: 24-hour current game clock time formatted as 'HH:MM'>",
     "watch": "<STRING: Current tracking period, e.g., 'morning', 'afternoon', 'evening', 'night_1', 'night_2'>",
