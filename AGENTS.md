@@ -34,7 +34,7 @@ Every player turn must be processed through the following internal pipeline befo
 4. LORE ANCHOR MATCH: Scan player input for matching keys in campaign/lore_anchors.json.  If a match occurs, inject that specific anchor's value into active memory.
 5. MECHANIC CORRELATION: Cross-reference actions with rules/ directory if a conflict occurs.
 6. RESOLUTION: Execute dice logic or calculate modifier math transparently.
-7. STATE UPDATE: Write back updated HP, resources, or changes to the room matrix. After every state write, dispatch the auto-commit as a background process using `terminal(background=true, notify_on_complete=true, command="git add campaign/ && git commit -m \"Turn {N}: {short summary}\"")`. This fire-and-forget pattern lets the main agent proceed immediately to Step 8 without blocking on git I/O. Derive the turn number from the incremental turn counter in `world_state.json` and write a brief imperative summary of what changed (e.g., `"Turn 3: Valen looted sarcophagus, -1 torch"`, `"Turn 7: Combat concluded, goblin chief slain, Valen -8 HP"`). If no state actually changed (a failed check with zero resource cost, a purely conversational turn), skip the commit entirely.
+7. STATE UPDATE: Write back updated HP, resources, or changes to the room matrix. After every state write, auto-commit the changes with `git add campaign/ && git commit -m "Turn {N}: {short summary}"`. Derive the turn number from the incremental turn counter in `world_state.json` and write a brief imperative summary of what changed (e.g., `"Turn 3: Valen looted sarcophagus, -1 torch"`, `"Turn 7: Combat concluded, goblin chief slain, Valen -8 HP"`). If no state actually changed (a failed check with zero resource cost, a purely conversational turn), skip the commit entirely.
 8. PROSE GENERATION: Render output matching the identity guidelines in SOUL.md.
 
 ## Campaign Git Management
@@ -64,12 +64,10 @@ If the branch does not exist (`git branch --list 'campaign/{campaign-name}'` ret
 
 ### Auto-Commit Rules
 
-- **Dispatch pattern:** Always use `terminal(background=true, notify_on_complete=true)` for commits. Never run `git commit` synchronously — it blocks the main agent and slows gameplay. The background dispatch fires the commit and immediately returns control so Step 8 (prose generation) can begin.
 - **Commit scope:** Only `campaign/` files. Never commit `rules/`, `blueprints/`, or `AGENTS.md` as part of game-state commits.
 - **Commit message format:** `Turn {N}: {imperative summary}` where N is the turn counter from `world_state.json`.
 - **When to skip:** Purely conversational turns, failed checks with no resource expenditure, or turns where the player only asks questions without acting.
-- **Initial commit:** After all 6 setup steps complete and campaign files are written, dispatch a background commit: `terminal(background=true, notify_on_complete=true, command="git add campaign/ && git commit -m \"Campaign initialized: {campaign-name}\"")`.
-- **Switching campaigns:** When switching campaigns, the save-commit on the current branch is the one exception — run it synchronously (`terminal(command="...")`) because you must confirm the commit succeeded before switching branches.
+- **Initial commit:** After all 6 setup steps complete and campaign files are written, make an initial commit: `git add campaign/ && git commit -m "Campaign initialized: {campaign-name}"`.
 
 ## Lore Activation Constraint
 
