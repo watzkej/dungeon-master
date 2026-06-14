@@ -95,7 +95,7 @@ regular gameplay begins.
 
 ### The Game Loop
 
-Every player turn runs through an 8-step execution pipeline:
+Every player turn runs through a 9-step execution pipeline:
 
 | Step | What Happens |
 |------|-------------|
@@ -105,8 +105,9 @@ Every player turn runs through an 8-step execution pipeline:
 | 4. Lore Anchor Match | Scans your input for NPC/location/item names; injects any matching secret |
 | 5. Mechanic Correlation | Cross-references your action against `rules/` if ambiguity exists |
 | 6. Resolution | Rolls dice, calculates modifiers, determines success/failure |
-| 7. State Update | Writes back HP changes, resource consumption, map transformations; auto-commits `campaign/` with a turn-numbered message |
+| 7. State Update | Writes back HP changes, resource consumption, map transformations to disk |
 | 8. Prose Generation | Renders the narrative outcome in the voice defined by `SOUL.md` |
+| 9. Git Commit | Auto-commits `campaign/` with a turn-numbered message (runs after prose is displayed to avoid terminal output clobbering the narrative) |
 
 Every mechanical action includes a transparent **Mechanics Resolution** block
 showing the DC, raw roll, modifiers, and state changes before the narrative
@@ -252,15 +253,20 @@ to validate party and world state during Setup Mode.
 
 Here's the stack I use to run the agent:
 
-1. **[Hermes Desktop](https://hermes-agent.nousresearch.com)** as the agent
+- **[Hermes Desktop](https://hermes-agent.nousresearch.com)** as the agent
    host — provides the tool execution environment, file I/O, terminal, and
    persistent session management.
-2. **[OpenRouter](https://openrouter.ai)** as the model provider — routes
+- **[OpenRouter](https://openrouter.ai)** as the model provider — routes
    requests to the cheapest available model for a given capability.
-3. **DeepSeek Flash** (or equivalent budget model) — my initial 2-hour play
+- **DeepSeek Flash** (or equivalent budget model) — my initial 2-hour play
    session cost roughly **$0.40** in API tokens. Since the agent architecture
    constrains the LLM to follow precise rules rather than generate creatively
    from scratch, cheap models perform surprisingly well.
+- **[Honcho](https://honcho.dev/)** for remote memory storage — entirely
+   optional since campaign state lives in the JSON files, but it noticeably
+   improves the model's long-term memory across sessions. Honcho provides
+   **$100 in free credits** to start, and the lightweight memory used by the
+   agent barely makes a dent in that balance.
 
 The combination of a disciplined agent architecture and a budget model means
 you can run multi-hour campaigns for pocket change.

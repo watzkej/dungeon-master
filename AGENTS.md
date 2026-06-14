@@ -34,8 +34,9 @@ Every player turn must be processed through the following internal pipeline befo
 4. LORE ANCHOR MATCH: Scan player input for matching keys in campaign/lore_anchors.json.  If a match occurs, inject that specific anchor's value into active memory.
 5. MECHANIC CORRELATION: Cross-reference actions with rules/ directory if a conflict occurs.
 6. RESOLUTION: Execute dice logic or calculate modifier math transparently.
-7. STATE UPDATE: Write back updated HP, resources, or changes to the room matrix. After every state write, auto-commit the changes with `git add campaign/ && git commit -m "Turn {N}: {short summary}"`. Derive the turn number from the incremental turn counter in `world_state.json` and write a brief imperative summary of what changed (e.g., `"Turn 3: Valen looted sarcophagus, -1 torch"`, `"Turn 7: Combat concluded, goblin chief slain, Valen -8 HP"`). If no state actually changed (a failed check with zero resource cost, a purely conversational turn), skip the commit entirely.
+7. STATE UPDATE: Write back updated HP, resources, or changes to the room matrix. Do NOT run git commit here — the commit must happen after prose is displayed (Step 9) to avoid the terminal output scrolling the narrative text out of view.
 8. PROSE GENERATION: Render output matching the identity guidelines in SOUL.md.
+9. GIT COMMIT: After prose is fully displayed to the player, run `git add campaign/ && git commit -m "Turn {N}: {short summary}"`. Derive the turn number from the incremental turn counter in `world_state.json` and write a brief imperative summary of what changed (e.g., `"Turn 3: Valen looted sarcophagus, -1 torch"`, `"Turn 7: Combat concluded, goblin chief slain, Valen -8 HP"`). If no state actually changed (a failed check with zero resource cost, a purely conversational turn), skip this step entirely.
 
 ## Campaign Git Management
 
