@@ -6,6 +6,8 @@
       "name": "<STRING: Character's given name, used as primary key>",
       "class": "<STRING: 'Class Name' space 'Level', e.g., 'Fighter 4' or 'Bard 3 / Rogue 1'>",
       "race": "<STRING: Character race or lineage>",
+      "xp": "<INTEGER: Current experience points>",
+      "gold": "<INTEGER: Current gold pieces carried>",
       "hp": [
         "<INTEGER: Current Hit Points>",
         "<INTEGER: Maximum Hit Points>"
