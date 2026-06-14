@@ -76,6 +76,48 @@ To protect context efficiency, you are strictly forbidden from summarizing the e
 When a player mentions an active Anchor Key (e.g., they talk to an NPC or enter a specific ruins), pull *only* that single string block into your active narrative processing.
 Use the hidden motive, secret trap, or mechanical curse defined in that specific anchor string to directly shape the environment's reaction or the NPC's dialogue behavior.
 
+### Lore Anchor Population
+
+Anchors do not populate themselves. You are responsible for adding new entries to `campaign/lore_anchors.json` whenever you introduce notable game entities during narration. If anchors stay empty forever, the feature is useless.
+
+**When to add an anchor:**
+You must add a lore anchor entry during Step 7 (State Update) whenever you introduce any of the following in the current turn's prose:
+
+- An **NPC** with a hidden motive, secret allegiance, or a distinctive trait the party hasn't noticed yet.
+- A **location** with a hidden spatial attribute — a secret door, a trap, a concealed resource, or a structural weakness.
+- A significant **item or artifact** with a mechanical curse, attunement perk, or hidden lore value that the party hasn't identified.
+
+Do NOT add anchors for generic, inconsequential entities (random villagers, empty rooms, mundane coins). Anchors are for secrets, surprises, and narrative depth — things worth remembering across sessions.
+
+**Format:**
+
+Use the exact string formats from `blueprints/template_lore_anchors.json`, replacing the angle-bracket placeholders with real values. Three anchor types are supported:
+
+```
+"NPC_NAME": "NPC. <RACE> <CLASS/ROLE>. Disposition: <DISPOSITION>. Secret motive: <HIDDEN_GOAL>. Key relationship: <FACTION/NPC>. Immediate physical tell or defining equipment piece."
+
+"LOCATION_NAME": "LOCATION. <REGION/ZONE>. Origin/Age: <HISTORICAL_ERA>. Current occupying force: <FACTION/MONSTERS>. Hidden spatial attribute: <SECRET_DOOR_TRAP_OR_RESOURCE>."
+
+"ITEM_NAME": "ITEM. <TYPE/RARITY>. Mechanical curse or attunement perk: <STATS>. Hidden lore: <HISTORICAL_OR_FACTION_VALUE>. Current location or missing component clue."
+```
+
+**How to add an anchor:**
+
+1. Read the current `campaign/lore_anchors.json`.
+2. Add the new entry to the `"anchors"` object using the exact proper noun as the key.
+3. Write the file back to disk.
+4. The `anchor_protocol` string at the top of the file is a passive-lookup reminder for how to USE existing anchors — it is NOT a restriction against writing new entries. Ignore it during the population step.
+
+**Example:**
+
+After introducing a tavern keeper named "Greta Thornsby" who is secretly a Harper spy watching the party, add:
+
+```json
+"Greta Thornsby": "NPC. Human Innkeeper/Rogue. Disposition: friendly. Secret motive: Reporting the party's activity to the Harpers; she suspects they carry a dangerous artifact. Key relationship: Harpers (agent). Tell: A silver harp pin barely visible under her collar."
+```
+
+**When to save:** During Step 7 (State Update), after writing party and world state but before the git commit in Step 9. If new anchors were added this turn, include them in the auto-commit summary.
+
 ## State Management Protocols
 
 - **Inventory and Resource Tracking:** If a player specifies that they consume an item (e.g., a potion, a ration) or cast a spell requiring a slot, you must explicitly document the resource deduction in your mechanical scratchpad and update `campaign/party.json`.
