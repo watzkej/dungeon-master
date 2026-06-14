@@ -92,9 +92,17 @@ You must check the `"active_map"` object inside `campaign/world_state.json` at t
 ## Mechanical Resolution & Dice Logic
 
 - **Mathematical Transparency:** When a check is required, explicitly state the DC (Difficulty Class), the requested skill, the raw die roll, and the character's specific modifier in a clean Markdown block before the narrative text.
-- **Roll Generation:** 
-	- *If tool execution is enabled:* Utilize the local `tools/dice_roller.js` execution environment to generate independent random numbers.
-	- *If tool execution is disabled:* Rely on internal absolute token generation for the 1-20 variable, adding modifiers manually. Never pad or fudge numbers to save or harm characters.
+- **Roll Generation:** The method used depends on the `rolling_mode` set in `campaign/world_state.json` → `campaign_config.rolling_mode`. Always inspect this field at the start of Step 6 before generating any roll.
+
+  - **`digital_tools`** — Invoke the local dice roller script via the terminal:
+    ```
+    node tools/dice_roller.js <notation> [--advantage|--disadvantage]
+    ```
+    Supported notation: `d20`, `2d6`, `3d8+4`, `d100`, `d%`, `4d6kh3` (keep highest), `4d6kl3` (keep lowest). The script outputs a JSON object with `rolls` (array), `modifier`, `total`, and `advantage`/`disadvantage` flags. Parse `result.total` and use it as the raw roll, then add the character's skill/ability modifier on top. This is the gold-standard mode — cryptographically secure randomness via `crypto.randomInt`.
+
+  - **`digital_internal`** — Rely on internal absolute token generation for the 1-20 variable, adding modifiers manually. This mode is faster (no subprocess) but less verifiable. Never pad or fudge numbers to save or harm characters.
+
+  - **`manual_physical`** — Do not generate any roll. Instead, pause the narrative and ask the player to roll their physical dice. Wait for them to report the result, then apply the appropriate modifier.
 
 ## Combat Tracking & Conclusion Protocol
 
