@@ -32,5 +32,21 @@
     "current_zone": "<STRING: Current Zone Name>",
     "matrix_layout": []
   },
+  "current_combat": {
+    "active": false,
+    "enemies": [
+      {
+        "name": "<STRING: Enemy name>",
+        "hp": ["<INTEGER: Current HP>", "<INTEGER: Max HP>"],
+        "ac": "<INTEGER: Armor Class>",
+        "status": "<STRING: 'alive' | 'dead' | 'fled' | 'surrendered'>",
+        "xp_value": "<INTEGER: XP awarded to the party when this enemy is defeated>"
+      }
+    ],
+    "loot_pool": [
+      "<STRING: Loot item with quantity, e.g., '12 gp', 'Potion of Healing', 'Silver Dagger'>"
+    ],
+    "combat_started_at_turn": "<INTEGER: The turn number when combat began, for summary reference>"
+  },
   "dm_notes": "<STRING: High-density narrative logic, immediate environment notes, hidden enemy traps, or behavioral conditions for current state processing. Keep brief.>"
 }

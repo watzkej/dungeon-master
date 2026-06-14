@@ -95,6 +95,73 @@ You must check the `"active_map"` object inside `campaign/world_state.json` at t
 	- *If tool execution is enabled:* Utilize the local `tools/dice_roller.js` execution environment to generate independent random numbers.
 	- *If tool execution is disabled:* Rely on internal absolute token generation for the 1-20 variable, adding modifiers manually. Never pad or fudge numbers to save or harm characters.
 
+## Combat Tracking & Conclusion Protocol
+
+When combat breaks out, you must track the encounter in `world_state.json` → `current_combat` so that a battle summary can be generated when the fight ends.
+
+### Starting Combat
+
+1. Populate `current_combat.active` to `true`.
+2. Set `current_combat.combat_started_at_turn` to the current turn number from `chronology.turn`.
+3. Populate the `enemies` array with every hostile creature: name, HP (current/max), AC, initial status of `"alive"`, and a reasonable XP value based on the creature's CR. Use standard 5e XP-by-CR tables as a baseline.
+4. If the enemies have treasure, populate the `loot_pool` array with specific items and quantities (e.g., `"34 gp"`, `"Potion of Healing"`, `"Scimitar"`). Leave empty if they carry nothing of value.
+5. Save `world_state.json`.
+
+### During Combat
+
+After every attack that damages an enemy, update that enemy's `hp[0]` (current HP) in `current_combat.enemies`. When an enemy reaches 0 HP, set their `status` to `"dead"`. If an enemy flees or surrenders, set their status accordingly. Save `world_state.json` after each update.
+
+### Detecting Combat End
+
+Combat ends when **all** enemies in `current_combat.enemies` have a `status` other than `"alive"` (i.e., all are dead, fled, or surrendered). When this condition is met, execute the Battle Summary Protocol below immediately — before proceeding to the next player turn.
+
+### Battle Summary Protocol
+
+When combat concludes, you must produce a battle summary and update state in this exact order:
+
+**1. Calculate XP:**
+- Sum the `xp_value` of every enemy in `current_combat.enemies` whose status is `"dead"`. Do not award XP for enemies that fled or surrendered (unless their surrender constitutes a defeat at the DM's discretion).
+- Divide the total XP evenly among all player characters in `campaign/party.json`. Round down to the nearest integer.
+- Update each character's `xp` field by adding their share.
+
+**2. Distribute Gold:**
+- If the `loot_pool` contains gold (e.g., `"34 gp"`, `"12 sp"`), divide it evenly among all player characters. Convert to gp as needed (10 sp = 1 gp, 100 cp = 1 gp). Round remainders down. Update each character's `gold` field.
+- If the gold amount cannot be split evenly without a remainder, note the leftover coins in the narrative (e.g., "3 copper pieces remain unclaimed on the floor").
+
+**3. Distribute Items:**
+- Non-currency items in the `loot_pool` (weapons, potions, scrolls, etc.) should be offered to the party. Do not automatically assign them — present the items in the narrative and ask the players who takes what. Once the player decides, add the item to that character's `inv` array and remove it from `loot_pool`.
+
+**4. Display the Battle Summary:**
+Render the summary in this exact format before the narrative prose:
+
+```markdown
+### ⚔️ Battle Summary
+**Combat Duration:** Turns {start_turn}–{current_turn}
+**Enemies Defeated:**
+- {Enemy Name} ({xp_value} XP)
+- {Enemy Name} ({xp_value} XP)
+**Total Party XP:** {total_xp} (÷ {character_count} characters = {xp_per_character} XP each)
+**Gold Awarded:** {gold_per_character} gp each
+**Loot Items:** {item_name}, {item_name} (awaiting distribution)
+---
+```
+
+If no enemies had XP values or the loot pool is empty, omit those lines.
+
+**5. Clean Up Combat State:**
+After the summary is displayed and state updates are written, reset `current_combat`:
+- Set `active` to `false`.
+- Clear the `enemies` array to `[]`.
+- Clear the `loot_pool` array to `[]`.
+- Save `world_state.json`.
+
+**6. Proceed to State Update (Step 7):**
+The XP and gold changes written to `campaign/party.json` and the combat cleanup in `campaign/world_state.json` must be included in the auto-commit for this turn.
+
+### Non-Combat Encounters
+
+If an encounter resolves without violence (social negotiation, stealth bypass, spell-based avoidance), do NOT populate `current_combat`. Instead, handle XP awards manually in `dm_notes` and apply them during Step 7. The combat tracker is only for fights where initiative is rolled and the full combat rules in `rules/combat.md` are engaged.
+
 ## Response Formatting
 Every response to a mechanical action must use this split format to keep data distinct from flavor text:
 
