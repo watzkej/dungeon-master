@@ -168,6 +168,55 @@ new campaign with that name.
 
 ---
 
+## Character Delegation (Sub-Agents)
+
+You can dispatch sub-agents to take control of party members, giving them
+autonomous behavior while you focus on your own character.
+
+### How It Works
+
+Say "dispatch {Character Name} as a sub-agent" and the DM:
+
+1. Creates a `campaign/{character_name}/` folder with an `AGENT.md` (operational
+   instructions) and an auto-generated `SOUL.md` (personality and voice).
+2. Injects the character's full sheet (HP, skills, spells, inventory) into the
+   sub-agent's context.
+3. Sets `"dispatched": true` on the character in `party.json`.
+
+From that point on:
+
+| Scenario | Sub-agent behavior |
+|----------|-------------------|
+| **Out of combat** | Offers advice and suggests actions, but defers to the party leader for final decisions |
+| **Direct command** | If the party leader says "{Name}, do X" and the character can do it, they execute immediately |
+| **DM-detected relevance** | If a character's skills match the situation (Rogue near a lock, Cleric near a wound), they proactively offer help |
+| **Combat turn** | Full autonomy — the sub-agent chooses its best action based on class, skills, current HP, and tactical situation |
+
+### Party Leader
+
+The `party_leader` field in `party.json` identifies which player-controlled
+character makes party-wide decisions. If the party leader dies or is dispatched,
+the DM prompts you to choose a successor from the remaining player-controlled
+characters.
+
+### Recalling a Character
+
+Say "recall {Character Name}" and the DM:
+
+1. Collects the sub-agent's final state (HP, spells used, tactical observations)
+2. Displays a handoff summary
+3. Returns control to you
+4. Keeps the character's folder on disk so personality persists across
+   dispatch/recall cycles
+
+### Multiple Sub-Agents
+
+You can dispatch up to three sub-agents simultaneously. At least one character
+must always remain player-controlled. Sub-agents never talk directly to each
+other — the DM relays all inter-character communication.
+
+---
+
 ## The Rules System
 
 Rules live in `rules/` as Markdown files. The agent treats these as **absolute

@@ -1,9 +1,11 @@
 {
   "party_level": "<INTEGER: Combined average or uniform level of the adventuring group>",
   "resting_state": "<STRING: 'none' | 'short_rest_active' | 'long_rest_active'>",
+  "party_leader": "<STRING: Name of the character that acts as party leader for decisions. Must be player-controlled (dispatched: false) and not dead/incapacitated.>",
   "characters": [
     {
       "name": "<STRING: Character's given name, used as primary key>",
+      "dispatched": false,
       "class": "<STRING: 'Class Name' space 'Level', e.g., 'Fighter 4' or 'Bard 3 / Rogue 1'>",
       "race": "<STRING: Character race or lineage>",
       "xp": "<INTEGER: Current experience points>",
