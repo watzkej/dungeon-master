@@ -248,6 +248,25 @@ to validate party and world state during Setup Mode.
 
 ---
 
+## My Setup
+
+Here's the stack I use to run the agent:
+
+1. **[Hermes Desktop](https://hermes-agent.nousresearch.com)** as the agent
+   host — provides the tool execution environment, file I/O, terminal, and
+   persistent session management.
+2. **[OpenRouter](https://openrouter.ai)** as the model provider — routes
+   requests to the cheapest available model for a given capability.
+3. **DeepSeek Flash** (or equivalent budget model) — my initial 2-hour play
+   session cost roughly **$0.40** in API tokens. Since the agent architecture
+   constrains the LLM to follow precise rules rather than generate creatively
+   from scratch, cheap models perform surprisingly well.
+
+The combination of a disciplined agent architecture and a budget model means
+you can run multi-hour campaigns for pocket change.
+
+---
+
 ## License
 
 MIT
